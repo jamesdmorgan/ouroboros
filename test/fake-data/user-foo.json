@@ -1,0 +1,33 @@
+{
+  "data": {
+    "loginName": "foo",
+    "fullName": "bar",
+    "groups": [],
+    "disabled": false,
+    "links": [
+      {
+        "href": "http://fake-eventstore.com:12345/users/foo/command/reset-password",
+        "rel": "reset-password"
+      },
+      {
+        "href": "http://fake-eventstore.com:12345/users/foo/command/change-password",
+        "rel": "change-password"
+      },
+      {
+        "href": "http://fake-eventstore.com:12345/users/foo",
+        "rel": "edit"
+      },
+      {
+        "href": "http://fake-eventstore.com:12345/users/foo",
+        "rel": "delete"
+      },
+      {
+        "href": "http://fake-eventstore.com:12345/users/foo/command/disable",
+        "rel": "disable"
+      }
+    ]
+  },
+  "success": true,
+  "error": "Success",
+  "msgTypeId": 51
+}

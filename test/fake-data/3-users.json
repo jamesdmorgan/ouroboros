@@ -1,0 +1,152 @@
+{
+  "title": "Event stream '$users'",
+  "id": "http://fake-eventstore.com:12345/streams/%24users",
+  "updated": "2016-03-15T15:32:36.891983Z",
+  "streamId": "$users",
+  "author": {
+    "name": "EventStore"
+  },
+  "headOfStream": true,
+  "selfUrl": "http://fake-eventstore.com:12345/streams/%24users",
+  "eTag": "3;248368668",
+  "links": [
+    {
+      "uri": "http://fake-eventstore.com:12345/streams/%24users",
+      "relation": "self"
+    },
+    {
+      "uri": "http://fake-eventstore.com:12345/streams/%24users/head/backward/20",
+      "relation": "first"
+    },
+    {
+      "uri": "http://fake-eventstore.com:12345/streams/%24users/4/forward/20",
+      "relation": "previous"
+    },
+    {
+      "uri": "http://fake-eventstore.com:12345/streams/%24users/metadata",
+      "relation": "metadata"
+    }
+  ],
+  "entries": [
+    {
+      "eventId": "5bd42a38-6332-4d37-9808-931c8d85b1b1",
+      "eventType": "$User",
+      "eventNumber": 3,
+      "data": "bob",
+      "metaData": "",
+      "streamId": "$users",
+      "isJson": false,
+      "isMetaData": false,
+      "isLinkMetaData": false,
+      "positionEventNumber": 3,
+      "positionStreamId": "$users",
+      "title": "3@$users",
+      "id": "http://fake-eventstore.com:12345/streams/%24users/3",
+      "updated": "2016-03-15T15:32:36.891983Z",
+      "author": {
+        "name": "EventStore"
+      },
+      "summary": "$User",
+      "links": [
+        {
+          "uri": "http://fake-eventstore.com:12345/streams/%24users/3",
+          "relation": "edit"
+        },
+        {
+          "uri": "http://fake-eventstore.com:12345/streams/%24users/3",
+          "relation": "alternate"
+        }
+      ]
+    },
+    {
+      "eventId": "49bee0c8-3414-4cde-a50b-be87df3bf9b0",
+      "eventType": "$User",
+      "eventNumber": 2,
+      "data": "developer",
+      "metaData": "",
+      "streamId": "$users",
+      "isJson": false,
+      "isMetaData": false,
+      "isLinkMetaData": false,
+      "positionEventNumber": 2,
+      "positionStreamId": "$users",
+      "title": "2@$users",
+      "id": "http://fake-eventstore.com:12345/streams/%24users/2",
+      "updated": "2016-03-15T14:28:27.302659Z",
+      "author": {
+        "name": "EventStore"
+      },
+      "summary": "$User",
+      "links": [
+        {
+          "uri": "http://fake-eventstore.com:12345/streams/%24users/2",
+          "relation": "edit"
+        },
+        {
+          "uri": "http://fake-eventstore.com:12345/streams/%24users/2",
+          "relation": "alternate"
+        }
+      ]
+    },
+    {
+      "eventId": "44074c2c-1cd6-4926-a04a-d439083595e7",
+      "eventType": "$User",
+      "eventNumber": 1,
+      "data": "ops",
+      "metaData": "",
+      "streamId": "$users",
+      "isJson": false,
+      "isMetaData": false,
+      "isLinkMetaData": false,
+      "positionEventNumber": 1,
+      "positionStreamId": "$users",
+      "title": "1@$users",
+      "id": "http://fake-eventstore.com:12345/streams/%24users/1",
+      "updated": "2016-03-15T13:53:10.871029Z",
+      "author": {
+        "name": "EventStore"
+      },
+      "summary": "$User",
+      "links": [
+        {
+          "uri": "http://fake-eventstore.com:12345/streams/%24users/1",
+          "relation": "edit"
+        },
+        {
+          "uri": "http://fake-eventstore.com:12345/streams/%24users/1",
+          "relation": "alternate"
+        }
+      ]
+    },
+    {
+      "eventId": "45daac95-ea77-456d-b177-3474b0a71179",
+      "eventType": "$User",
+      "eventNumber": 0,
+      "data": "admin",
+      "metaData": "",
+      "streamId": "$users",
+      "isJson": false,
+      "isMetaData": false,
+      "isLinkMetaData": false,
+      "positionEventNumber": 0,
+      "positionStreamId": "$users",
+      "title": "0@$users",
+      "id": "http://fake-eventstore.com:12345/streams/%24users/0",
+      "updated": "2016-03-15T13:53:10.871002Z",
+      "author": {
+        "name": "EventStore"
+      },
+      "summary": "$User",
+      "links": [
+        {
+          "uri": "http://fake-eventstore.com:12345/streams/%24users/0",
+          "relation": "edit"
+        },
+        {
+          "uri": "http://fake-eventstore.com:12345/streams/%24users/0",
+          "relation": "alternate"
+        }
+      ]
+    }
+  ]
+}

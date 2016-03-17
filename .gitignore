@@ -1,0 +1,7 @@
+.egg-info
+.ropeproject
+__pycache__
+site-packages
+*.swp
+*.egg-info
+.idea
