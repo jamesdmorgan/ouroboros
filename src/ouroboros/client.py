@@ -44,9 +44,18 @@ class UserManager:
 
     def addgroup(self, username, *args):
         user = self.get(username)
-        user.groups.extend(args)
+        groups = set(user.groups)
+        groups.update(args)
+
         self.client.put('/users/'+username, {
             "fullName": user.full_name,
+            "groups": list(groups)
+        })
+
+    def rename(self, username, full_name):
+        user = self.get(username)
+        self.client.put('/users/'+username, {
+            "fullName": full_name,
             "groups": user.groups
         })
 
