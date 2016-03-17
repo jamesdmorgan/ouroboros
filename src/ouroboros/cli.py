@@ -6,7 +6,9 @@ def make_client(ctx):
     return Client(ctx.obj['host'],
                     ctx.obj['port'],
                     ctx.obj['authuser'],
-                    ctx.obj['authpassword'])
+                    ctx.obj['authpassword'],
+                    ctx.obj['no_ssl']
+                  )
 
 
 @click.group()
@@ -14,14 +16,14 @@ def make_client(ctx):
 @click.option("--authpassword", prompt=True, hide_input=True, envvar='ES_ADMIN_PASS')
 @click.option("--host", default="127.0.0.1", envvar='ES_HOST')
 @click.option("--port", default=2113, envvar='ES_PORT')
-@click.option("--no-https", default=False, envvar='ES_NO_SSL')
+@click.option("--no-ssl", default=False, envvar='ES_NO_SSL', is_flag=True)
 @click.pass_context
-def ouro(ctx, authuser, authpassword, host, port, no_https):
+def ouro(ctx, authuser, authpassword, host, port, no_ssl):
     ctx.obj['authuser'] = authuser
     ctx.obj['authpassword'] = authpassword
     ctx.obj['host'] = host
     ctx.obj['port'] = port
-    ctx.obj['ssl'] = not no_https
+    ctx.obj['no_ssl'] = no_ssl
 
 @ouro.command()
 @click.argument("username")
@@ -65,5 +67,8 @@ def groupdel(ctx, group, username):
     client.users.removegroup(username, *group)
 
 
-if __name__ == '__main__':
+def main():
     ouro(obj={})
+
+if __name__ == '__main__':
+    main()
