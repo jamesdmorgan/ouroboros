@@ -10,23 +10,23 @@
     "disabled": false,
     "links": [
       {
-        "href": "http://localhost:2113/users/giddy/command/reset-password",
+        "href": "http://fake-eventstore.com:12345/users/giddy/command/reset-password",
         "rel": "reset-password"
       },
       {
-        "href": "http://localhost:2113/users/giddy/command/change-password",
+        "href": "http://fake-eventstore.com:12345/users/giddy/command/change-password",
         "rel": "change-password"
       },
       {
-        "href": "http://localhost:2113/users/giddy",
+        "href": "http://fake-eventstore.com:12345/users/giddy",
         "rel": "edit"
       },
       {
-        "href": "http://localhost:2113/users/giddy",
+        "href": "http://fake-eventstore.com:12345/users/giddy",
         "rel": "delete"
       },
       {
-        "href": "http://localhost:2113/users/giddy/command/disable",
+        "href": "http://fake-eventstore.com:12345/users/giddy/command/disable",
         "rel": "disable"
       }
     ]

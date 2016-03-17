@@ -10,11 +10,11 @@ def make_client(ctx):
 
 
 @click.group()
-@click.option("--authuser", prompt=True, envvar='OURO_USER')
-@click.option("--authpassword", prompt=True, hide_input=True, envvar='OURO_PASS')
-@click.option("--host", default="127.0.0.1")
-@click.option("--port", default=2113)
-@click.option("--no-https", default=False)
+@click.option("--authuser", prompt=True, envvar='ES_ADMIN_USER')
+@click.option("--authpassword", prompt=True, hide_input=True, envvar='ES_ADMIN_PASS')
+@click.option("--host", default="127.0.0.1", envvar='ES_HOST')
+@click.option("--port", default=2113, envvar='ES_PORT')
+@click.option("--no-https", default=False, envvar='ES_NO_SSL')
 @click.pass_context
 def ouro(ctx, authuser, authpassword, host, port, no_https):
     ctx.obj['authuser'] = authuser

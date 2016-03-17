@@ -50,7 +50,7 @@ class UserManager:
         groups = set(user.groups)
         groups.update(args)
 
-        response = self.client.put('/users/'+username, {
+        response = self.client.put(user.links['edit'], {
             "fullName": user.full_name,
             "groups": list(groups)
         })
@@ -60,16 +60,14 @@ class UserManager:
         groups = set(user.groups)
         groups.difference_update(args)
 
-        response = self.client.put('/users/'+username, {
+        response = self.client.put(user.links['edit'], {
             "fullName": user.full_name,
             "groups": list(groups)
         })
-        print(response)
-
 
     def rename(self, username, full_name):
         user = self.get(username)
-        self.client.put('/users/'+username, {
+        response = self.client.put(user.links['edit'], {
             "fullName": full_name,
             "groups": user.groups
         })
@@ -77,8 +75,9 @@ class UserManager:
 
 class Client:
 
-    def __init__(self, host, port, username, password):
-        self.base_uri = "http://{0}:{1}".format(host, port)
+    def __init__(self, host, port, username, password, no_ssl=False):
+        scheme = "http" if no_ssl else "https"
+        self.base_uri = "{0}://{1}:{2}".format(scheme, host, port)
         self.users = UserManager(self)
         self.username = username
         self.password = password

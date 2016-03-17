@@ -8,23 +8,23 @@
     "disabled": false,
     "links": [
       {
-        "href": "http://localhost:2113/users/admin/command/reset-password",
+        "href": "http://fake-eventstore.com:12345/users/admin/command/reset-password",
         "rel": "reset-password"
       },
       {
-        "href": "http://localhost:2113/users/admin/command/change-password",
+        "href": "http://fake-eventstore.com:12345/users/admin/command/change-password",
         "rel": "change-password"
       },
       {
-        "href": "http://localhost:2113/users/admin",
+        "href": "http://fake-eventstore.com:12345/users/admin",
         "rel": "edit"
       },
       {
-        "href": "http://localhost:2113/users/admin",
+        "href": "http://fake-eventstore.com:12345/users/admin",
         "rel": "delete"
       },
       {
-        "href": "http://localhost:2113/users/admin/command/disable",
+        "href": "http://fake-eventstore.com:12345/users/admin/command/disable",
         "rel": "disable"
       }
     ]
