@@ -73,3 +73,23 @@ class when_updating_the_name(with_fake_http):
                 "fullName": "bob the mighty",
                 "groups": ["$admins"]
             }))
+
+
+class when_removing_a_user_from_a_group(with_fake_http):
+
+    def given_an_existing_user(self):
+        self.start_mocking_http()
+        self.fake_response('/users/giddy', file='user-giddy.json')
+        self.expect_call('/users/giddy', httpretty.PUT)
+
+    def because_we_remove_a_group_from_the_user(self):
+        self.client.users.removegroup('giddy', 'ops', 'cheeses')
+
+    def it_should_put_the_correct_body(self):
+        body = httpretty.last_request().body.decode('Utf-8')
+        posted_groups = json.loads(body)["groups"]
+
+        expect(set(["devs"])).to(equal(
+            set(posted_groups)))
+
+

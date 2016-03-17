@@ -56,6 +56,14 @@ def rename(ctx, username, fullname):
     client = make_client(ctx)
     client.users.rename(username, fullname)
 
+@ouro.command()
+@click.argument("username")
+@click.argument("group", nargs=-1)
+@click.pass_context
+def groupdel(ctx, group, username):
+    client = make_client(ctx)
+    client.users.removegroup(username, *group)
+
 
 if __name__ == '__main__':
     ouro(obj={})

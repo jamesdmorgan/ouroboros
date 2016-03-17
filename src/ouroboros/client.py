@@ -54,7 +54,18 @@ class UserManager:
             "fullName": user.full_name,
             "groups": list(groups)
         })
+
+    def removegroup(self, username, *args):
+        user = self.get(username)
+        groups = set(user.groups)
+        groups.difference_update(args)
+
+        response = self.client.put('/users/'+username, {
+            "fullName": user.full_name,
+            "groups": list(groups)
+        })
         print(response)
+
 
     def rename(self, username, full_name):
         user = self.get(username)
