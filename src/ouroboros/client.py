@@ -2,6 +2,7 @@ from collections import namedtuple
 import requests
 from requests.auth import HTTPBasicAuth
 import pprint
+from urllib.parse import urljoin
 
 User = namedtuple(
     'user', [
@@ -41,17 +42,19 @@ class UserManager:
 
     def delete(self, username):
         user = self.get(username)
-        requests.delete(user.links['delete'])
+        response = self.client.delete(user.links['delete'])
+        print(response)
 
     def addgroup(self, username, *args):
         user = self.get(username)
         groups = set(user.groups)
         groups.update(args)
 
-        self.client.put('/users/'+username, {
+        response = self.client.put('/users/'+username, {
             "fullName": user.full_name,
             "groups": list(groups)
         })
+        print(response)
 
     def rename(self, username, full_name):
         user = self.get(username)
@@ -70,15 +73,17 @@ class Client:
         self.password = password
 
     def get_uri(self, path):
-        return self.base_uri+path
+        return urljoin(self.base_uri, path)
 
     def post(self, path, body):
-        response = requests.post(self.get_uri(path),
+        response = requests.post(
+            self.get_uri(path),
             json=body,
-            auth=HTTPBasicAuth(self.username, self.password),
+            auth=HTTPBasicAuth(
+                self.username,
+                self.password),
             headers={
-            'Content-Type': 'application/json'
-        })
+                'Content-Type': 'application/json'})
         print(response)
 
     def get(self, path):
@@ -94,4 +99,12 @@ class Client:
                                 })
 
     def put(self, path, body):
-        return requests.put(self.get_uri(path), json=body)
+        return requests.put(self.get_uri(path),
+                            auth=HTTPBasicAuth(self.username, self.password),
+                            json=body)
+
+    def delete(self, path):
+        return requests.delete(self.get_uri(path),
+            auth=HTTPBasicAuth(
+                self.username,
+                self.password))
