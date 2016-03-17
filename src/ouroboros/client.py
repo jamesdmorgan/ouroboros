@@ -42,6 +42,14 @@ class UserManager:
         requests.delete(user.links['delete'])
 
 
+    def addgroup(self, username, *args):
+        user = self.get(username)
+        user.groups.extend(args)
+        self.client.put('/users/'+username, {
+            "fullName": user.full_name,
+            "groups": user.groups
+        })
+
 class Client:
 
     def __init__(self, host, port):
@@ -68,3 +76,5 @@ class Client:
                                 'Content-Type': 'application/json'
                                 })
 
+    def put(self, path, body):
+        return requests.put(self.get_uri(path), json=body)
