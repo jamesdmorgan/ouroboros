@@ -10,7 +10,7 @@ class with_fake_http:
     def start_mocking_http(self):
         self.host = "fake-eventstore.com"
         self.port = 12345
-        self.client = Client(self.host, self.port)
+        self.client = Client(self.host, self.port, "admin", "changeit")
         httpretty.enable()
 
     def cleanup_httpretty(self):

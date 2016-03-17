@@ -1,5 +1,6 @@
 from collections import namedtuple
 import requests
+from requests.auth import HTTPBasicAuth
 import pprint
 
 User = namedtuple(
@@ -10,13 +11,14 @@ User = namedtuple(
 class UserNotFoundException(Exception):
     pass
 
+
 class UserManager:
 
     def __init__(self, client):
         self.client = client
 
     def create(self, username, password, fullname=None, groups=[]):
-        self.client.post('/$user-'+username,
+        self.client.post('/users/',
                          {
                              "loginName": username,
                              "password": password,
@@ -41,7 +43,6 @@ class UserManager:
         user = self.get(username)
         requests.delete(user.links['delete'])
 
-
     def addgroup(self, username, *args):
         user = self.get(username)
         groups = set(user.groups)
@@ -59,19 +60,26 @@ class UserManager:
             "groups": user.groups
         })
 
+
 class Client:
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, username, password):
         self.base_uri = "http://{0}:{1}".format(host, port)
         self.users = UserManager(self)
+        self.username = username
+        self.password = password
 
     def get_uri(self, path):
         return self.base_uri+path
 
     def post(self, path, body):
-        requests.post(self.get_uri(path), json=body, headers={
-            'Content-Type': 'application/vnd.eventstore.atom+json'
+        response = requests.post(self.get_uri(path),
+            json=body,
+            auth=HTTPBasicAuth(self.username, self.password),
+            headers={
+            'Content-Type': 'application/json'
         })
+        print(response)
 
     def get(self, path):
         return requests.get(self.get_uri(path)+'?embed=tryharder',

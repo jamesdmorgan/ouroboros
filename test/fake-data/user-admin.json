@@ -1,0 +1,35 @@
+{
+  "data": {
+    "loginName": "admin",
+    "fullName": "Event Store Administrator",
+    "groups": [
+      "$admins"
+    ],
+    "disabled": false,
+    "links": [
+      {
+        "href": "http://localhost:2113/users/admin/command/reset-password",
+        "rel": "reset-password"
+      },
+      {
+        "href": "http://localhost:2113/users/admin/command/change-password",
+        "rel": "change-password"
+      },
+      {
+        "href": "http://localhost:2113/users/admin",
+        "rel": "edit"
+      },
+      {
+        "href": "http://localhost:2113/users/admin",
+        "rel": "delete"
+      },
+      {
+        "href": "http://localhost:2113/users/admin/command/disable",
+        "rel": "disable"
+      }
+    ]
+  },
+  "success": true,
+  "error": "Success",
+  "msgTypeId": 51
+}
