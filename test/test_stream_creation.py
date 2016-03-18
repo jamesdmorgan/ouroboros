@@ -1,3 +1,4 @@
+from ouroboros.client import Acl
 from .fakes import with_fake_http
 import httpretty
 from expects import expect
@@ -28,13 +29,12 @@ class when_creating_a_stream_with_some_acls(with_fake_http):
 
     def because_we_create_a_new_stream(self):
         self.client.streams.create('my-stream',
-                                   eventid="foo",
-                                   read=['devs', 'ops', '$admins'],
-                                   write=['ops', '$admins'],
-                                   delete=['$admins'],
-                                   metadata_read=['$all'],
-                                   metadata_write=['$admins']
-                                   )
+                                   Acl( read=['devs', 'ops', '$admins'],
+                                        write=['ops', '$admins'],
+                                        delete=['$admins'],
+                                        metadata_read=['$all'],
+                                        metadata_write=['$admins']),
+                                   eventid="foo")
 
     def it_should_post_metadata(self):
         expect(httpretty.last_request()).to(have_json([{

@@ -16,6 +16,63 @@ User = namedtuple(
         'login_name', 'full_name', 'disabled', 'links', 'groups'])
 
 
+class Acl:
+
+    def __init__(self, read=None, write=None, delete=None, metadata_read=None, metadata_write=None):
+        self.read = read
+        self.write = write
+        self.delete = delete
+        self.metadata_read = metadata_read
+        self.metadata_write = metadata_write
+
+    def to_dict(self):
+        return {k:v for k,v in {
+                "$r": self.read,
+                "$w": self.write,
+                "$d": self.delete,
+                "$mr": self.metadata_read,
+                "$mw": self.metadata_write
+                }.items()
+            if v is not None}
+
+    @staticmethod
+    def get_entry(v):
+        if isinstance(v, str):
+            return [v]
+        return v
+
+    @staticmethod
+    def from_dict(data):
+        return Acl(read = Acl.get_entry(data["$r"]),
+                   write = Acl.get_entry(data["$w"]),
+                   delete = Acl.get_entry(data["$d"]),
+                   metadata_read = Acl.get_entry(data["$mr"]),
+                   metadata_write = Acl.get_entry(data["$mw"]))
+
+    def coalesce(self, first, snd):
+        if first is not None:
+            return first
+        if snd is not None:
+            return snd
+        return None
+
+    def update(self, other):
+        return Acl(
+            read = self.coalesce(self.read, other.read),
+            write = self.coalesce(self.write, other.write),
+            delete = self.coalesce(self.delete, other.delete),
+            metadata_read = self.coalesce(self.metadata_read, other.metadata_read),
+            metadata_write = self.coalesce(self.metadata_write, other.metadata_write)
+        )
+
+    def is_default(self):
+        return not any(self.to_dict())
+
+    @staticmethod
+    def empty():
+        return Acl()
+
+
 class UserNotFoundException(Exception):
     pass
 
@@ -85,57 +142,28 @@ class StreamManager:
     def __init__(self, client):
         self.client = client
 
-    def create(self, name, eventid=None,
-               read=None,
-               write=None,
-               delete=None,
-               metadata_read=None,
-               metadata_write=None):
-
-        acl = {k:v for k,v in {
-                "$r": read,
-                "$w": write,
-                "$d": delete,
-                "$mr": metadata_read,
-                "$mw": metadata_write
-                }.items()
-            if v is not None}
-
+    def create(self, name, acl=Acl.empty(), eventid=None):
         metadata = {
             "eventId": str(eventid or uuid.uuid4()),
             "eventType": "$user-updated"
         }
-        if any(acl):
-            metadata["$acl"] = acl
+        if not acl.is_default():
+            metadata["$acl"] = acl.to_dict()
 
         self.client.post("/streams/"+name+"/metadata", [metadata], EVENTS)
 
-    def set_acl(self, name, eventid=None,
-               read=None,
-               write=None,
-               delete=None,
-               metadata_read=None,
-               metadata_write=None):
-
+    def set_acl(self, name, acl, eventid=None):
         metadata = self.client.get('/streams/'+name+'/metadata', STREAMDESC)
         metadata = metadata.json()
-        if "$acl" not in metadata:
-            metadata["$acl"] = {}
+        if "$acl" in metadata:
+            current = Acl.from_dict(metadata["$acl"])
+        else:
+            current = Acl()
 
-        acl = {k:v for k,v in {
-               "$r": read,
-               "$w": write,
-               "$d": delete,
-               "$mr": metadata_read,
-               "$mw": metadata_write
-               }.items()
-           if v is not None}
-
-        metadata["$acl"].update(acl)
         event = {
             "eventId": str(eventid or uuid.uuid4()),
             "eventType": "$user-updated",
-            "$acl": metadata["$acl"]
+            "$acl": acl.update(current).to_dict()
         }
         self.client.post("/streams/"+name+"/metadata", [event], EVENTS)
 
