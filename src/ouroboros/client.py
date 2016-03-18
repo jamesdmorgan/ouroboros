@@ -50,11 +50,7 @@ class Acl:
                    metadata_write = Acl.get_entry(data["$mw"]))
 
     def coalesce(self, first, snd):
-        if first is not None:
-            return first
-        if snd is not None:
-            return snd
-        return None
+        return first if first is not None else snd
 
     def update(self, other):
         return Acl(
@@ -65,7 +61,7 @@ class Acl:
             metadata_write = self.coalesce(self.metadata_write, other.metadata_write)
         )
 
-    def is_default(self):
+    def is_empty(self):
         return not any(self.to_dict())
 
     @staticmethod
@@ -147,7 +143,7 @@ class StreamManager:
             "eventId": str(eventid or uuid.uuid4()),
             "eventType": "$user-updated"
         }
-        if not acl.is_default():
+        if not acl.is_empty():
             metadata["$acl"] = acl.to_dict()
 
         self.client.post("/streams/"+name+"/metadata", [metadata], EVENTS)
