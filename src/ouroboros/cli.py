@@ -1,5 +1,5 @@
 import click
-from ouroboros.client import Client
+from ouroboros.client import Client, Acl
 
 
 def make_client(ctx):
@@ -65,6 +65,32 @@ def rename(ctx, username, fullname):
 def groupdel(ctx, group, username):
     client = make_client(ctx)
     client.users.removegroup(username, *group)
+
+
+@ouro.command()
+@click.argument("stream")
+@click.option("--read", "-r", multiple=True)
+@click.option("--write", "-w", multiple=True)
+@click.option("--delete", "-d", multiple=True)
+@click.option("--metadata-read", "-mr", multiple=True)
+@click.option("--metadata-write", "-mw", multiple=True)
+@click.pass_context
+def streamadd(ctx, stream, read, write, delete, metadata_read, metadata_write):
+    client = make_client(ctx)
+    client.streams.create(stream, Acl(read, write, delete, metadata_read, metadata_write))
+
+
+@ouro.command("set-acl")
+@click.argument("stream")
+@click.option("--read", "-r", multiple=True)
+@click.option("--write", "-w", multiple=True)
+@click.option("--delete", "-d", multiple=True)
+@click.option("--metadata-read", "-mr", multiple=True)
+@click.option("--metadata-write", "-mw", multiple=True)
+@click.pass_context
+def set_acl(ctx, stream, read, write, delete, metadata_read, metadata_write):
+    client = make_client(ctx)
+    client.streams.set_acl(stream, Acl(read, write, delete, metadata_read, metadata_write))
 
 
 def main():

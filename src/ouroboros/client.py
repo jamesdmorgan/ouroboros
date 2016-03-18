@@ -145,10 +145,10 @@ class StreamManager:
     def create(self, name, acl=Acl.empty(), eventid=None):
         metadata = {
             "eventId": str(eventid or uuid.uuid4()),
-            "eventType": "$user-updated"
+            "eventType": "settings"
         }
         if not acl.is_empty():
-            metadata["$acl"] = acl.to_dict()
+            metadata["data"] = {"$acl": acl.to_dict()}
 
         self.client.post("/streams/"+name+"/metadata", [metadata], EVENTS)
 
@@ -166,8 +166,10 @@ class StreamManager:
         current = self.get_acl(name) or Acl()
         event = {
             "eventId": str(eventid or uuid.uuid4()),
-            "eventType": "$user-updated",
-            "$acl": acl.update(current).to_dict()
+            "eventType": "settings",
+            "data": {
+                "$acl": acl.update(current).to_dict()
+            }
         }
         self.client.post("/streams/"+name+"/metadata", [event], EVENTS)
 

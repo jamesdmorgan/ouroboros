@@ -21,10 +21,12 @@ class when_adding_an_acl_to_an_existing_stream(with_fake_http):
     def it_should_post_the_correct_acl(self):
         expect(httpretty.last_request()).to(have_json([{
             "eventId": "foo",
-            "eventType": "$user-updated",
-            "$acl": {
-                "$r": ["devs", "ops", "qa"],
-                "$w": ["ops"]
+            "eventType": "settings",
+            "data": {
+                "$acl": {
+                    "$r": ["devs", "ops", "qa"],
+                    "$w": ["ops"]
+                }
             }
         }]))
 
@@ -54,13 +56,15 @@ class when_updating_the_acl_of_a_stream(with_fake_http):
    def it_should_post_the_correct_body(self):
         expect(httpretty.last_request()).to(have_json([{
             "eventId": "foo",
-            "eventType": "$user-updated",
-            "$acl": {
-                "$w": [],
-                "$r": ["greg"],
-                "$d": ["$admins"],
-                "$mw": ["$admins"],
-                "$mr": ["$admins"]
+            "eventType": "settings",
+            "data": {
+                "$acl": {
+                    "$w": [],
+                    "$r": ["greg"],
+                    "$d": ["$admins"],
+                    "$mw": ["$admins"],
+                    "$mr": ["$admins"]
+                }
             }
         }]))
 

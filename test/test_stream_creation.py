@@ -17,7 +17,7 @@ class when_creating_a_new_stream(with_fake_http):
     def it_should_post_metadata(self):
         expect(httpretty.last_request()).to(have_json([{
             "eventId": "foo",
-            "eventType": "$user-updated"
+            "eventType": "settings"
         }]))
 
 
@@ -39,12 +39,14 @@ class when_creating_a_stream_with_some_acls(with_fake_http):
     def it_should_post_metadata(self):
         expect(httpretty.last_request()).to(have_json([{
             "eventId": "foo",
-            "eventType": "$user-updated",
-            "$acl": {
-                "$r": ['devs', 'ops', '$admins'],
-                "$w": ['ops', '$admins'],
-                "$d": ['$admins'],
-                "$mr": ['$all'],
-                "$mw": ['$admins']
+            "eventType": "settings",
+            "data": {
+                "$acl": {
+                    "$r": ['devs', 'ops', '$admins'],
+                    "$w": ['ops', '$admins'],
+                    "$d": ['$admins'],
+                    "$mr": ['$all'],
+                    "$mw": ['$admins']
+                }
             }
         }]))
