@@ -1,5 +1,5 @@
-from ouroboros.client import Acl
-from expects import expect
+from ouroboros.client import Acl, StreamNotFoundException
+from expects import expect, be_a
 import httpretty
 from .fakes import with_fake_http
 from .matchers import have_json
@@ -67,4 +67,17 @@ class when_updating_the_acl_of_a_stream(with_fake_http):
 
 
 class when_updating_the_acl_of_a_nonexistent_stream(with_fake_http):
-    pass
+
+    def given_the_absence_of_a_stream(self):
+       self.start_mocking_http()
+       self.expect_call('/streams/my-stream/metadata', httpretty.POST)
+       self.fake_response('/streams/missing-stream/metadata', status=404)
+
+    def because_we_try_to_update_the_stream(self):
+        try:
+            self.client.streams.set_acl('missing-stream', Acl())
+        except Exception as e:
+            self.exception = e
+
+    def it_should_raise_StreamNotFound(self):
+        expect(self.exception).to(be_a(StreamNotFoundException))

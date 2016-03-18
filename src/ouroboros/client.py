@@ -73,6 +73,10 @@ class UserNotFoundException(Exception):
     pass
 
 
+class StreamNotFoundException(Exception):
+    pass
+
+
 class UserManager:
 
     def __init__(self, client):
@@ -148,14 +152,18 @@ class StreamManager:
 
         self.client.post("/streams/"+name+"/metadata", [metadata], EVENTS)
 
-    def set_acl(self, name, acl, eventid=None):
-        metadata = self.client.get('/streams/'+name+'/metadata', STREAMDESC)
-        metadata = metadata.json()
-        if "$acl" in metadata:
-            current = Acl.from_dict(metadata["$acl"])
-        else:
-            current = Acl()
+    def get_acl(self, name):
+        response = self.client.get('/streams/'+name+'/metadata', STREAMDESC)
+        if(response.status_code == 404):
+            raise StreamNotFoundException()
+        data = response.json()
+        if "$acl" in data:
+            return Acl.from_dict(data["$acl"])
+        return None
 
+
+    def set_acl(self, name, acl, eventid=None):
+        current = self.get_acl(name) or Acl()
         event = {
             "eventId": str(eventid or uuid.uuid4()),
             "eventType": "$user-updated",
