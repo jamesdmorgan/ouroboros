@@ -17,8 +17,7 @@ class with_fake_http:
         httpretty.reset()
         httpretty.disable()
 
-    def fake_response(self, path, file=None, status=200):
-        body = None
+    def fake_response(self, path, file=None, status=200, body=None):
         if file:
             fn = os.path.join(os.path.dirname(__file__), 'fake-data', file)
             with open(fn, 'r') as f:

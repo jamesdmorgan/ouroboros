@@ -9,6 +9,7 @@ import uuid
 JSON="application/json"
 ATOM="application/vnd.eventstore.atom+json"
 EVENTS="application/vnd.eventstore.events+json"
+STREAMDESC="application/vnd.eventstore.streamdesc+json"
 
 User = namedtuple(
     'user', [
@@ -84,12 +85,60 @@ class StreamManager:
     def __init__(self, client):
         self.client = client
 
-    def create(self, name, eventid=None):
-        metadata = [{
+    def create(self, name, eventid=None,
+               read=None,
+               write=None,
+               delete=None,
+               metadata_read=None,
+               metadata_write=None):
+
+        acl = {k:v for k,v in {
+                "$r": read,
+                "$w": write,
+                "$d": delete,
+                "$mr": metadata_read,
+                "$mw": metadata_write
+                }.items()
+            if v is not None}
+
+        metadata = {
             "eventId": str(eventid or uuid.uuid4()),
             "eventType": "$user-updated"
-        }]
-        self.client.post("/streams/"+name+"/metadata", metadata, EVENTS)
+        }
+        if any(acl):
+            metadata["$acl"] = acl
+
+        self.client.post("/streams/"+name+"/metadata", [metadata], EVENTS)
+
+    def set_acl(self, name, eventid=None,
+               read=None,
+               write=None,
+               delete=None,
+               metadata_read=None,
+               metadata_write=None):
+
+        metadata = self.client.get('/streams/'+name+'/metadata', STREAMDESC)
+        metadata = metadata.json()
+        if "$acl" not in metadata:
+            metadata["$acl"] = {}
+
+        acl = {k:v for k,v in {
+               "$r": read,
+               "$w": write,
+               "$d": delete,
+               "$mr": metadata_read,
+               "$mw": metadata_write
+               }.items()
+           if v is not None}
+
+        metadata["$acl"].update(acl)
+        event = {
+            "eventId": str(eventid or uuid.uuid4()),
+            "eventType": "$user-updated",
+            "$acl": metadata["$acl"]
+        }
+        self.client.post("/streams/"+name+"/metadata", [event], EVENTS)
+
 
 
 class Client:
