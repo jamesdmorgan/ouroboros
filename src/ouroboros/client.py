@@ -1,7 +1,6 @@
 from collections import namedtuple
 import requests
 from requests.auth import HTTPBasicAuth
-import pprint
 from urllib.parse import urljoin
 import uuid
 
@@ -136,6 +135,12 @@ class UserManager:
             "groups": user.groups
         }, JSON)
 
+    def setpassword(self, username, password):
+        user = self.get(username)
+        self.client.post(user.links['reset-password'], {
+            'newPassword': password
+        }, JSON)
+
 
 class StreamManager:
 
@@ -157,10 +162,10 @@ class StreamManager:
         if(response.status_code == 404):
             raise StreamNotFoundException()
         data = response.json()
+        print(data)
         if "$acl" in data:
             return Acl.from_dict(data["$acl"])
         return None
-
 
     def set_acl(self, name, acl, eventid=None):
         current = self.get_acl(name) or Acl()
@@ -173,7 +178,8 @@ class StreamManager:
         }
         self.client.post("/streams/"+name+"/metadata", [event], EVENTS)
 
-
+    def delete(self, name):
+        self.client.delete('/streams/'+name)
 
 class Client:
 

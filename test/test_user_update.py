@@ -21,6 +21,7 @@ class when_adding_a_user_to_a_group(with_fake_http):
                 "groups": ["new-group"]
             }))
 
+
 class when_adding_a_duplicate_group(with_fake_http):
 
     def given_an_existing_user(self):
@@ -93,3 +94,17 @@ class when_removing_a_user_from_a_group(with_fake_http):
             set(posted_groups)))
 
 
+class when_changing_a_user_password(with_fake_http):
+
+    def given_an_existing_user(self):
+        self.start_mocking_http()
+        self.fake_response('/users/giddy', file='user-giddy.json')
+        self.expect_call('/users/giddy/command/reset-password', httpretty.POST)
+
+    def because_we_change_the_password(self):
+        self.client.users.setpassword('giddy', 'k1ng0fl1thuan14')
+
+    def it_should_have_posted_the_correct_body(self):
+        expect(httpretty.last_request()).to(have_json({
+            'newPassword': 'k1ng0fl1thuan14'
+        }))

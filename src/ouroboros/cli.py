@@ -93,6 +93,22 @@ def set_acl(ctx, stream, read, write, delete, metadata_read, metadata_write):
     client.streams.set_acl(stream, Acl(read, write, delete, metadata_read, metadata_write))
 
 
+@ouro.command("usermod")
+@click.argument("username")
+@click.option("--group", "-g", multiple=True)
+@click.option("--delete-group", "-d", multiple=True)
+@click.option("--password")
+@click.pass_context
+def update_user(ctx, username, group, delete_group, password):
+    client = make_client(ctx)
+    if group:
+        client.users.addgroup(username, *group)
+    if delete_group:
+        client.users.removegroup(username, *delete_group)
+    if password:
+        client.users.setpassword(username, password)
+
+
 def main():
     ouro(obj={})
 
