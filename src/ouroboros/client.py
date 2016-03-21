@@ -201,7 +201,8 @@ class StreamManager:
         self.client.post("/streams/"+name+"/metadata", [metadata], EVENTS)
 
     def get_acl(self, name):
-        response = self.client.get('/streams/'+name+'/metadata', STREAMDESC)
+        response = self.client.get('/streams/'+name+'/metadata', JSON)
+        print(response)
         if(response.status_code == 404):
             raise StreamNotFoundException()
         data = response.json()
@@ -262,6 +263,7 @@ class Client:
 
     def get(self, path, content_type):
         return requests.get(self.get_uri(path)+'?embed=tryharder',
+                            auth=HTTPBasicAuth(self.username, self.password),
                             headers={
                                 'Accept': content_type
                                 })

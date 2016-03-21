@@ -93,6 +93,35 @@ def set_acl(ctx, stream, read, write, delete, metadata_read, metadata_write):
     client.streams.set_acl(stream, Acl(read, write, delete, metadata_read, metadata_write))
 
 
+@ouro.command("grant")
+@click.argument("stream")
+@click.option("--read", "-r", multiple=True)
+@click.option("--write", "-w", multiple=True)
+@click.option("--delete", "-d", multiple=True)
+@click.option("--metadata-read", "-mr", multiple=True)
+@click.option("--metadata-write", "-mw", multiple=True)
+@click.pass_context
+def grant(ctx, stream, read, write, delete, metadata_read, metadata_write):
+    client = make_client(ctx)
+    client.streams.grant(stream, Acl(read, write, delete, metadata_read, metadata_write))
+
+@ouro.command("revoke")
+@click.argument("stream")
+@click.option("--read", "-r", multiple=True)
+@click.option("--write", "-w", multiple=True)
+@click.option("--delete", "-d", multiple=True)
+@click.option("--metadata-read", "-mr", multiple=True)
+@click.option("--metadata-write", "-mw", multiple=True)
+@click.pass_context
+def revoke(ctx, stream, read, write, delete, metadata_read, metadata_write):
+    client = make_client(ctx)
+    client.streams.revoke(stream, Acl(read, write, delete, metadata_read, metadata_write))
+
+
+
+
+
+
 @ouro.command("usermod")
 @click.argument("username")
 @click.option("--group", "-g", multiple=True)
