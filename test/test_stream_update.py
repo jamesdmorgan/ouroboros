@@ -60,10 +60,7 @@ class when_updating_the_acl_of_a_stream(with_fake_http):
             "data": {
                 "$acl": {
                     "$w": [],
-                    "$r": ["greg"],
-                    "$d": ["$admins"],
-                    "$mw": ["$admins"],
-                    "$mr": ["$admins"]
+                    "$r": ["greg"]
                 }
             }
         }]))
@@ -85,3 +82,85 @@ class when_updating_the_acl_of_a_nonexistent_stream(with_fake_http):
 
     def it_should_raise_StreamNotFound(self):
         expect(self.exception).to(be_a(StreamNotFoundException))
+
+
+class when_granting_permissions_to_a_stream(with_fake_http):
+
+    def given_a_stream_with_an_acl(self):
+       self.start_mocking_http()
+       self.expect_call('/streams/my-stream/metadata', httpretty.POST)
+       self.fake_response('/streams/my-stream/metadata', status=200,
+                          body = """
+                          {
+                             "$acl" : {
+                                "$w"  : "greg",
+                                "$r"  : ["greg", "john"],
+                                "$d"  : "$admins",
+                                "$mw" : "$admins",
+                                "$mr" : "$admins"
+                             }
+                          }""")
+
+    def because_we_grant_permissions(self):
+        self.client.streams.grant('my-stream',Acl(
+                                  read=['fred'],
+                                  write=['fred'],
+                                  delete=['fred'],
+                                  metadata_read=['fred']),
+                                  eventid='foo')
+
+
+    def it_should_post_the_correct_body(self):
+        expect(httpretty.last_request()).to(have_json([{
+            "eventId": "foo",
+            "eventType": "settings",
+            "data": {
+                "$acl": {
+                    "$w": ['fred', 'greg'],
+                    "$r": ['fred', "greg", 'john'],
+                    "$d": ["$admins", 'fred'],
+                    "$mw": ["$admins"],
+                    "$mr": ["$admins", 'fred']
+                }
+            }
+        }]))
+
+
+class when_revoking_permissions_from_a_stream(with_fake_http):
+
+    def given_a_stream_with_an_acl(self):
+       self.start_mocking_http()
+       self.expect_call('/streams/my-stream/metadata', httpretty.POST)
+       self.fake_response('/streams/my-stream/metadata', status=200,
+                          body = """
+                          {
+                             "$acl" : {
+                                "$w"  : "greg",
+                                "$r"  : ["greg", "john"],
+                                "$d"  : "$admins",
+                                "$mw" : "$admins",
+                                "$mr" : "$admins"
+                             }
+                          }""")
+
+    def because_we_grant_permissions(self):
+        self.client.streams.revoke('my-stream',Acl(
+                                  read=['greg'],
+                                  write=['greg']),
+                                  eventid='foo')
+
+
+    def it_should_post_the_correct_body(self):
+        expect(httpretty.last_request()).to(have_json([{
+            "eventId": "foo",
+            "eventType": "settings",
+            "data": {
+                "$acl": {
+                    "$w": [],
+                    "$r": ['john'],
+                    "$d": ["$admins"],
+                    "$mw": ["$admins"],
+                    "$mr": ["$admins"]
+                }
+            }
+        }]))

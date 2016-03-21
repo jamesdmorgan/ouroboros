@@ -14,6 +14,8 @@ User = namedtuple(
     'user', [
         'login_name', 'full_name', 'disabled', 'links', 'groups'])
 
+def as_set(val):
+    return set() if not val else set(val)
 
 class Acl:
 
@@ -58,6 +60,47 @@ class Acl:
             delete = self.coalesce(self.delete, other.delete),
             metadata_read = self.coalesce(self.metadata_read, other.metadata_read),
             metadata_write = self.coalesce(self.metadata_write, other.metadata_write)
+        )
+
+
+    def merge(self, a, b):
+        if not a:
+            return b
+        if not b:
+            return a
+        result = set(a)
+        result.update(set(b))
+        return sorted(list(result))
+
+    def strip(self, a, b):
+        if not a:
+            return b
+        if not b:
+            return a
+        result = set(a)
+        result.difference_update(set(b))
+        return sorted(list(result))
+
+
+    def as_set(self, val):
+        return set(val) if val else set()
+
+    def grant(self, other):
+        return Acl(
+            read = self.merge(self.read, other.read),
+            write = self.merge(self.write, other.write),
+            delete = self.merge(self.delete, other.delete),
+            metadata_read = self.merge(self.metadata_read, other.metadata_read),
+            metadata_write = self.merge(self.metadata_write, other.metadata_write)
+        )
+
+    def revoke(self, other):
+        return Acl(
+            read = self.strip(self.read, other.read),
+            write = self.strip(self.write, other.write),
+            delete = self.strip(self.delete, other.delete),
+            metadata_read = self.strip(self.metadata_read, other.metadata_read),
+            metadata_write = self.strip(self.metadata_write, other.metadata_write)
         )
 
     def is_empty(self):
@@ -168,18 +211,30 @@ class StreamManager:
         return None
 
     def set_acl(self, name, acl, eventid=None):
-        current = self.get_acl(name) or Acl()
+        current = self.get_acl(name)
         event = {
             "eventId": str(eventid or uuid.uuid4()),
             "eventType": "settings",
             "data": {
-                "$acl": acl.update(current).to_dict()
+                "$acl": acl.to_dict()
             }
         }
         self.client.post("/streams/"+name+"/metadata", [event], EVENTS)
 
     def delete(self, name):
         self.client.delete('/streams/'+name)
+
+    def grant(self, stream, acl=Acl.empty(), eventid=None):
+        current = self.get_acl(stream) or Acl.empty()
+        new = current.grant(acl)
+        self.set_acl(stream, new, eventid)
+
+    def revoke(self, stream, acl=Acl.empty(), eventid=None):
+        current = self.get_acl(stream) or Acl.empty()
+        new = current.revoke(acl)
+        self.set_acl(stream, new, eventid)
+
+
 
 class Client:
 
