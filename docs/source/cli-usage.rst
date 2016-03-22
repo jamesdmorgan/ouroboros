@@ -141,7 +141,7 @@ Users can be removed from groups using either the `groupdel` command or the `use
 Resetting a user's password
 ---------------------------
 
-User passwords can be reset using the usermod command.
+User passwords can be reset using the `usermod` command.
 ::
 
    ⇒  ouro usermod fred --password s00pers33krit
