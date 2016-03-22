@@ -5,3 +5,5 @@ site-packages
 *.swp
 *.egg-info
 .idea
+docs/build
+dist
