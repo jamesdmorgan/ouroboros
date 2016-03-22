@@ -43,6 +43,9 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   cli-usage
+   programmatic-usage
+
 
 
 Indices and tables
