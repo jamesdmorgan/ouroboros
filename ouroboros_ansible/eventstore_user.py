@@ -62,7 +62,7 @@ EXAMPLES = '''
 from future.standard_library import install_aliases
 install_aliases()
 
-from ouroboros.client import Client
+from ouroboros.client import Client, NotFoundException, AuthenticationException
 
 
 def remove_user(client, module):
@@ -72,6 +72,28 @@ def remove_user(client, module):
     module.exit_json(changed=True)
 
 
+def create_user(client, module):
+    username = module.params.get('username')
+    password = module.params.get('password')
+    fullname = module.params.get('fullname')
+    groups = module.params.get('groups') or []
+    if not password:
+        module.fail_json(msg='password is required when creating new users')
+    client.users.create(
+       username,
+       password,
+       fullname,
+       groups)
+
+    module.exit_json(changed=True, result={
+        "actions": ["create"],
+        "user": {
+            "name": username,
+            "fullname": fullname or username,
+            "groups": groups
+        }
+    })
+
 def update_user(client, module):
     user = module.params['username']
     password = module.params['password']
@@ -80,7 +102,7 @@ def update_user(client, module):
     changed = False
 
     if password:
-        pwclient = build_client(module.params['http_uri'], user, password)
+        pwclient = Client.from_uri(module.params['host_uri'], user, password)
         try:
             user_state = pwclient.users.get(user)
         except AuthenticationException:
@@ -95,7 +117,7 @@ def update_user(client, module):
     if not user_state:
         create_user(client, module)
 
-    if pw_reset:
+    if actions['pw_reset']:
         client.users.setpassword(user, password)
         changed = True
 
@@ -114,14 +136,17 @@ def update_user(client, module):
         actions['groups_removed'] = groups_to_remove
         changed = True
 
-    module.exit_json(changed=changed, result=actions)
+    module.exit_json(changed=changed, result={
+        "actions": actions,
+        "user": {"name": user}
+    })
 
 
 def main():
     module = AnsibleModule(argument_spec=dict(
         host_uri=dict(required=True, type='str'),
         admin_username=dict(required=True, type='str'),
-        admin_password=dict(required=True, type='str'),
+        admin_password=dict(required=True, type='str', no_log=True),
         username=dict(required=True, type='str'),
         state=dict(required=True, type='str', choices=['absent', 'present']),
         fullname=dict(required=False, default=None, type='str'),
