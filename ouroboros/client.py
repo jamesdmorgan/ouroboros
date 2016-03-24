@@ -258,7 +258,7 @@ class Client:
         return r
 
     def get_uri(self, path):
-        return urljoin(self.base_uri, path)
+        return urljoin(self.base_uri, str(path))
 
     def post(self, path, body, content_type):
         response = requests.post(
