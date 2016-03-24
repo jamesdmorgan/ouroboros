@@ -1,4 +1,4 @@
-from ouroboros.client import Acl, StreamNotFoundException
+from ouroboros.client import Acl, NotFoundException
 from expects import expect, be_a
 import httpretty
 from .fakes import with_fake_http
@@ -81,7 +81,7 @@ class when_updating_the_acl_of_a_nonexistent_stream(with_fake_http):
             self.exception = e
 
     def it_should_raise_StreamNotFound(self):
-        expect(self.exception).to(be_a(StreamNotFoundException))
+        expect(self.exception).to(be_a(NotFoundException))
 
 
 class when_granting_permissions_to_a_stream(with_fake_http):

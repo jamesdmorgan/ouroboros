@@ -1,9 +1,9 @@
 from .fakes import with_fake_http
 import httpretty
 from expects import expect, be_a
-from .matchers import have_posted_to, have_json
+from .matchers import have_posted_to
 
-from ouroboros.client import UserNotFoundException
+from ouroboros.client import NotFoundException
 
 class when_deleting_a_user(with_fake_http):
 
@@ -33,4 +33,4 @@ class  when_we_try_to_delete_a_non_existent_user(with_fake_http):
             self.exception = e
 
     def it_should_raise_user_not_found(self):
-        expect(self.exception).to(be_a(UserNotFoundException))
+        expect(self.exception).to(be_a(NotFoundException))

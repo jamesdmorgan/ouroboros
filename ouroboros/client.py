@@ -1,7 +1,10 @@
+from future.standard_library import install_aliases
+install_aliases()
+
 from collections import namedtuple
 import requests
 from requests.auth import HTTPBasicAuth
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 import uuid
 
 
@@ -111,13 +114,12 @@ class Acl:
         return Acl()
 
 
-class UserNotFoundException(Exception):
+class NotFoundException(Exception):
     pass
 
 
-class StreamNotFoundException(Exception):
+class AuthenticationException(Exception):
     pass
-
 
 class UserManager:
 
@@ -247,6 +249,14 @@ class Client:
         self.username = username
         self.password = password
 
+    def __handle(self, r):
+        if r.status_code == 401:
+            raise AuthenticationException()
+        if r.status_code == 404:
+            raise NotFoundException()
+        r.raise_for_status()
+        return r
+
     def get_uri(self, path):
         return urljoin(self.base_uri, path)
 
@@ -259,25 +269,31 @@ class Client:
                 self.password),
             headers={
                 'Content-Type': content_type})
-        print(response)
+        return self.__handle(response)
 
     def get(self, path, content_type):
-        return requests.get(self.get_uri(path)+'?embed=tryharder',
+        return self.__handle(requests.get(self.get_uri(path)+'?embed=tryharder',
                             auth=HTTPBasicAuth(self.username, self.password),
                             headers={
                                 'Accept': content_type
-                                })
+                                }))
 
     def put(self, path, body, content_type):
-        return requests.put(self.get_uri(path),
+        return self.__handle(requests.put(self.get_uri(path),
                             auth=HTTPBasicAuth(self.username, self.password),
                             json=body,
                             headers={
                                 'Content-Type': content_type
-                            })
+                            }))
 
     def delete(self, path):
-        return requests.delete(self.get_uri(path),
+        return self.__handle(requests.delete(self.get_uri(path),
             auth=HTTPBasicAuth(
                 self.username,
-                self.password))
+                self.password)))
+
+    @staticmethod
+    def from_uri(uri, username, password):
+        parts = urlparse(uri)
+        return Client(parts.hostname, parts.port, username, password,
+                    no_ssl=(parts.scheme == "http"))
