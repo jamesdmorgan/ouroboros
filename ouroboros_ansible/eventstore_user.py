@@ -67,9 +67,12 @@ from ouroboros.client import Client, NotFoundException, AuthenticationException
 
 def remove_user(client, module):
     user = module.params['username']
-    if client.users.get(user):
-        client.users.remove(user)
-    module.exit_json(changed=True)
+    try:
+        client.users.get(user)
+        client.users.delete(user)
+        module.exit_json(changed=True)
+    except NotFoundException:
+        module.exit_json(changed=False)
 
 
 def create_user(client, module):
