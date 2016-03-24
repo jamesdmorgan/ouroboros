@@ -277,6 +277,18 @@ class StreamManager:
         self.client.post("/streams/$settings", [event], EVENTS)
 
 
+    def set_default_system_acl(self, acl, eventid=None):
+        user,system = self.get_default_acl()
+        system = acl.update(Acl.deny_all())
+        event = {
+            "eventId": str(eventid or uuid.uuid4()),
+            "eventType": "settings",
+            "data": {
+                "$userStreamAcl": user.to_dict(),
+                "$systemStreamAcl": system.to_dict()
+            }
+        }
+        self.client.post("/streams/$settings", [event], EVENTS)
 
 
 class Client:
