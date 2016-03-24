@@ -113,6 +113,24 @@ class Acl:
     def empty():
         return Acl()
 
+    @staticmethod
+    def deny_all():
+        return Acl(read=[], write=[], delete=[], metadata_read=[], metadata_write=[])
+
+
+DEFAULT_DEFAULT_ACL=(Acl(
+                        read=["$all"],
+                        write=["$all"],
+                        delete=["$all"],
+                        metadata_read=["$all"],
+                        metadata_write=["$all"]),
+                    Acl(
+                        read=["$admins"],
+                        write=["$admins"],
+                        delete=["$admins"],
+                        metadata_read=["$admins"],
+                        metadata_write=["$admins"]
+                    ))
 
 class NotFoundException(Exception):
     pass
@@ -204,14 +222,22 @@ class StreamManager:
 
     def get_acl(self, name):
         response = self.client.get('/streams/'+name+'/metadata', JSON)
-        print(response)
-        if(response.status_code == 404):
-            raise StreamNotFoundException()
         data = response.json()
-        print(data)
         if "$acl" in data:
             return Acl.from_dict(data["$acl"])
         return None
+
+    def get_default_acl(self):
+        try:
+            response = self.client.get('/streams/$settings', EVENTS)
+        except NotFoundException:
+            return DEFAULT_DEFAULT_ACL
+
+        latest = response.json()["entries"][0]
+        acl = self.client.get(latest["id"], JSON).json()
+        return(Acl.from_dict(acl["$userStreamAcl"]),
+               Acl.from_dict(acl["$systemStreamAcl"]))
+
 
     def set_acl(self, name, acl, eventid=None):
         current = self.get_acl(name)
@@ -236,6 +262,20 @@ class StreamManager:
         current = self.get_acl(stream) or Acl.empty()
         new = current.revoke(acl)
         self.set_acl(stream, new, eventid)
+
+    def set_default_user_acl(self, acl, eventid=None):
+        user,system = self.get_default_acl()
+        user = acl.update(Acl.deny_all())
+        event = {
+            "eventId": str(eventid or uuid.uuid4()),
+            "eventType": "settings",
+            "data": {
+                "$userStreamAcl": user.to_dict(),
+                "$systemStreamAcl": system.to_dict()
+            }
+        }
+        self.client.post("/streams/$settings", [event], EVENTS)
+
 
 
 
