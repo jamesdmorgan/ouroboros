@@ -1,0 +1,81 @@
+# vim:ft=ansible:
+
+- hosts: local
+  connection: local
+  tasks:
+  - eventstore_user:
+      username: gurukiran
+      password: guru_password
+      fullname: Guru Kiran
+      admin_username: admin
+      admin_password: changeit
+      host_uri: http://localhost:2113
+      state: absent
+      groups:
+        - qa
+
+- hosts: local
+  connection: local
+  tasks:
+  - eventstore_stream:
+      host_uri: http://localhost:2113
+      admin_username: admin
+      admin_password: changeit
+      state: present
+      name: my-first-stream
+      acl:
+        read:
+          - ops
+          - qa
+          - devs
+          - services
+        write:
+          - ops
+          - services
+          - devs
+        delete:
+          - ops
+        metadata_read:
+          - ops
+          - qa
+          - services
+          - devs
+        metadata_write:
+          - ops
+
+  - eventstore_default_acl:
+      host_uri: http://localhost:2113
+      admin_username: admin
+      admin_password: changeit
+      
+      user:
+        read:
+          - ops
+          - qa
+          - devs
+          - services
+        write:
+          - ops
+          - services
+        delete:
+          - ops
+        metadata_read:
+          - ops
+          - qa
+          - devs
+        metadata_write:
+          - ops
+
+      system: 
+        read:
+          - ops
+        write:
+          - ops
+        delete:
+          - ops
+        metadata_read:
+          - ops
+        metadata_write:
+          - ops
+
+
