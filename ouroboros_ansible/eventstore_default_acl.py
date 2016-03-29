@@ -2,8 +2,8 @@
 #
 DOCUMENTATION = """
 ---
-module: eventstore_stream
-short_description: create, remove, and manage streams in EventStore
+module: eventstore_default_acl
+short_description: Manage the default ACLs in eventstire
 description:
     -
 options:
@@ -16,54 +16,36 @@ options:
     admin_password:
         description: The password to use when modifying users
         required: true
-    name:
-        description: The name of the stream to manage
-        required: true
-    acl:
-        description: The access control list to apply to the stream. Required when creating a new stream
+    user:
+        description: The access control list for user-created streams
         required: false
-    state:
-        choices: ["absent", "present"]
-        required: true
-        description: Controls whether the stream should exist or not
+    system:
+        description: The access control list for system streams
+        required: false
 """
 
 EXAMPLES = '''
-# Create a new stream with the default acl
+# Modify the default acl for user-created streams
 - eventstore_stream:
     host_uri: http://localhost:2113
     admin_username: admin
     admin_password: changeit
-    name: my-stream
-    state: present
-
-
-# Remove a stream
-- eventstore_stream:
-    host_uri: http://localhost:2113
-    admin_username: admin
-    admin_password: changeit
-    name: my-stream
-    state: absent
-
-# Create a stream with a custom acl
-- eventstore_stream:
-    host_uri: http://localhost:2113
-    admin_username: admin
-    admin_password: changeit
-    name: my-stream
-    state: present
-    acl:
+    user:
         read:
-            - devs
             - ops
+            - services
+            - devs
             - qa
         write:
             - ops
+            - services
         delete:
             - ops
         metadata_read:
-            - $all
+            - ops
+            - services
+            - qa
+            - devs
         metadata_write:
             - ops
  '''
@@ -71,30 +53,18 @@ EXAMPLES = '''
 from future.standard_library import install_aliases
 install_aliases()
 
-from ouroboros.client import Client, NotFoundException, Acl
-
-def remove_stream(client, module):
-    name = module.params.get('name')
-    try:
-        client.streams.get_acl(name)
-    except NotFoundException:
-        module.exit_json(changed=False)
-    client.streams.delete(name)
-    module.exit_json(changed=True)
+from ouroboros.client import Client, NotFoundException
 
 def update_stream(client, module):
     name = module.params.get('name')
-    result = {
-        'stream': name,
-    }
     acl = Acl.empty()
-    if "acl" in module.params:
-        acl = Acl(**module.params.get('acl'))
+    if "user" in module.params:
+        user_acl = Acl(**module.params.get('user'))
         result['acl'] = acl.to_dict()
 
     try:
-        current = client.streams.get_acl(name)
-        if acl.is_empty() or acl == current:
+        client.streams.get_acl(name)
+        if acl.is_empty():
             module.exit_json(changed=False)
         client.streams.set_acl(name, acl)
         result['action'] = 'update'
@@ -109,16 +79,16 @@ def main():
         host_uri=dict(required=True, type='str'),
         admin_username=dict(required=True, type='str'),
         admin_password=dict(required=True, type='str'),
-        state=dict(required=True, type='str', choices=['absent', 'present']),
+        system=dict(required=False, type='dict'),
+        user=dict(required=False, type='dict'),
         name=dict(required=True, type='str'),
-        acl=dict(required=False, default=dict(), type='dict')))
+        ))
 
     uri = module.params['host_uri']
     adminuser = module.params['admin_username']
     adminpass = module.params['admin_password']
 
     client = Client.from_uri(uri, adminuser, adminpass)
-    state = module.params['state']
 
     if state == "absent":
         remove_stream(client, module)

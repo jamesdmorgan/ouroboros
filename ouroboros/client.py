@@ -29,6 +29,15 @@ class Acl:
         self.metadata_read = metadata_read
         self.metadata_write = metadata_write
 
+
+    def __eq__(self, other):
+        return (self.as_set(self.read) == self.as_set(other.read)
+            and self.as_set(self.write) == self.as_set(other.write)
+            and self.as_set(self.delete) == self.as_set(other.delete)
+            and self.as_set(self.metadata_read) == self.as_set(other.metadata_read)
+            and self.as_set(self.metadata_write) == self.as_set(other.metadata_write))
+
+
     def to_dict(self):
         return {k:v for k,v in {
                 "$r": self.read,
