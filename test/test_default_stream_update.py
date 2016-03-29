@@ -13,7 +13,7 @@ class when_creating_the_user_default_acl(with_fake_http):
         self.expect_call('/streams/$settings', httpretty.POST)
 
     def because_we_call_set_acl(self):
-        self.client.streams.set_default_user_acl(Acl(
+        self.client.user_acl.set_acl(Acl(
             read=['bob']
         ), eventid="foo")
 
@@ -50,7 +50,7 @@ class when_creating_the_system_default_acl(with_fake_http):
         self.expect_call('/streams/$settings', httpretty.POST)
 
     def because_we_call_set_acl(self):
-        self.client.streams.set_default_system_acl(Acl(
+        self.client.system_acl.set_acl(Acl(
             read=['fred'],
             write=['fred']
         ), eventid="foo")
@@ -75,6 +75,158 @@ class when_creating_the_system_default_acl(with_fake_http):
                     "$d": [],
                     "$mr":[],
                     "$mw": []
+                }
+            }
+        }]))
+
+
+class when_granting_additional_permissions_on_the_user_default_acl(with_fake_http):
+
+    def given_a_default_acl(self):
+        self.start_mocking_http()
+        self.fake_response('/streams/$settings', file='settings-stream.js')
+        self.fake_response('/streams/$settings/0', file='settings.json')
+        self.expect_call('/streams/$settings', httpretty.POST)
+
+    def because_we_grant_additional_permissions(self):
+        self.client.user_acl.grant(Acl(
+            read=['giddy', 'kevin']
+        ), eventid='foo')
+
+    def it_should_post_the_correct_body(self):
+        expect(httpretty.last_request()).to(have_json([
+        {
+            "eventId": "foo",
+            "eventType": "settings",
+            "data":
+            {
+                "$userStreamAcl": {
+                    "$r": ["$all", "giddy", "kevin"],
+                    "$w": ["ouro"],
+                    "$d": ["ouro"],
+                    "$mr": ["ouro"],
+                    "$mw": ["ouro"]
+                },
+                "$systemStreamAcl": {
+                    "$r": ["$admins", "ouro"],
+                    "$w": ["$admins"],
+                    "$d": ["$admins"],
+                    "$mr":["$admins"],
+                    "$mw": ["$admins"]
+                }
+            }
+        }]))
+
+
+class when_revoking_permissions_from_the_user_acl(with_fake_http):
+
+    def given_a_default_acl(self):
+        self.start_mocking_http()
+        self.fake_response('/streams/$settings', file='settings-stream.js')
+        self.fake_response('/streams/$settings/0', file='settings.json')
+        self.expect_call('/streams/$settings', httpretty.POST)
+
+    def because_we_revoke_write_permissions(self):
+        self.client.user_acl.revoke(Acl(
+            write=['ouro']
+        ), eventid='foo')
+
+    def it_should_post_the_correct_body(self):
+        expect(httpretty.last_request()).to(have_json([
+        {
+            "eventId": "foo",
+            "eventType": "settings",
+            "data":
+            {
+                "$userStreamAcl": {
+                    "$r": ["$all"],
+                    "$w": [],
+                    "$d": ["ouro"],
+                    "$mr": ["ouro"],
+                    "$mw": ["ouro"]
+                },
+                "$systemStreamAcl": {
+                    "$r": ["$admins", "ouro"],
+                    "$w": ["$admins"],
+                    "$d": ["$admins"],
+                    "$mr":["$admins"],
+                    "$mw": ["$admins"]
+                }
+            }
+        }]))
+
+
+class when_granting_additional_permissions_on_the_system_default_acl(with_fake_http):
+
+    def given_a_default_acl(self):
+        self.start_mocking_http()
+        self.fake_response('/streams/$settings', file='settings-stream.js')
+        self.fake_response('/streams/$settings/0', file='settings.json')
+        self.expect_call('/streams/$settings', httpretty.POST)
+
+    def because_we_grant_additional_permissions(self):
+        self.client.system_acl.grant(Acl(
+            write=['giddy', 'kevin']
+        ), eventid='foo')
+
+    def it_should_post_the_correct_body(self):
+        expect(httpretty.last_request()).to(have_json([
+        {
+            "eventId": "foo",
+            "eventType": "settings",
+            "data":
+            {
+                "$userStreamAcl": {
+                    "$r": ["$all"],
+                    "$w": ["ouro"],
+                    "$d": ["ouro"],
+                    "$mr": ["ouro"],
+                    "$mw": ["ouro"]
+                },
+                "$systemStreamAcl": {
+                    "$r": ["$admins", "ouro"],
+                    "$w": ["$admins", "giddy", "kevin"],
+                    "$d": ["$admins"],
+                    "$mr":["$admins"],
+                    "$mw": ["$admins"]
+                }
+            }
+        }]))
+
+
+class when_revoking_permissions_from_the_system_acl(with_fake_http):
+
+    def given_a_default_acl(self):
+        self.start_mocking_http()
+        self.fake_response('/streams/$settings', file='settings-stream.js')
+        self.fake_response('/streams/$settings/0', file='settings.json')
+        self.expect_call('/streams/$settings', httpretty.POST)
+
+    def because_we_revoke_write_permissions(self):
+        self.client.system_acl.revoke(Acl(
+            read=['ouro']
+        ), eventid='foo')
+
+    def it_should_post_the_correct_body(self):
+        expect(httpretty.last_request()).to(have_json([
+        {
+            "eventId": "foo",
+            "eventType": "settings",
+            "data":
+            {
+                "$userStreamAcl": {
+                    "$r": ["$all"],
+                    "$w": ["ouro"],
+                    "$d": ["ouro"],
+                    "$mr": ["ouro"],
+                    "$mw": ["ouro"]
+                },
+                "$systemStreamAcl": {
+                    "$r": ["$admins"],
+                    "$w": ["$admins"],
+                    "$d": ["$admins"],
+                    "$mr":["$admins"],
+                    "$mw": ["$admins"]
                 }
             }
         }]))

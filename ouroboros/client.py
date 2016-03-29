@@ -227,17 +227,6 @@ class StreamManager:
             return Acl.from_dict(data["$acl"])
         return None
 
-    def get_default_acl(self):
-        try:
-            response = self.client.get('/streams/$settings', EVENTS)
-        except NotFoundException:
-            return DEFAULT_DEFAULT_ACL
-
-        latest = response.json()["entries"][0]
-        acl = self.client.get(latest["id"], JSON).json()
-        return(Acl.from_dict(acl["$userStreamAcl"]),
-               Acl.from_dict(acl["$systemStreamAcl"]))
-
 
     def set_acl(self, name, acl, eventid=None):
         current = self.get_acl(name)
@@ -263,9 +252,31 @@ class StreamManager:
         new = current.revoke(acl)
         self.set_acl(stream, new, eventid)
 
-    def set_default_user_acl(self, acl, eventid=None):
-        user,system = self.get_default_acl()
-        user = acl.update(Acl.deny_all())
+
+class DefaultAclManager:
+
+    def __init__(self, client, is_system=False):
+        self.client = client
+        self.is_system = is_system
+
+    def get_acl(self):
+        try:
+            response = self.client.get('/streams/$settings', EVENTS)
+        except NotFoundException:
+            return DEFAULT_DEFAULT_ACL
+
+        latest = response.json()["entries"][0]
+        acl = self.client.get(latest["id"], JSON).json()
+        return(Acl.from_dict(acl["$userStreamAcl"]),
+               Acl.from_dict(acl["$systemStreamAcl"]))
+
+    def set_acl(self, acl, eventid=None):
+        user,system = self.get_acl()
+        if self.is_system:
+            system = acl.update(Acl.deny_all())
+        else:
+            user = acl.update(Acl.deny_all())
+
         event = {
             "eventId": str(eventid or uuid.uuid4()),
             "eventType": "settings",
@@ -276,19 +287,17 @@ class StreamManager:
         }
         self.client.post("/streams/$settings", [event], EVENTS)
 
+    def grant(self, acl=Acl.empty(), eventid=None):
+        user, system = self.get_acl()
+        current = system if self.is_system else user
+        new = current.grant(acl)
+        self.set_acl(new, eventid)
 
-    def set_default_system_acl(self, acl, eventid=None):
-        user,system = self.get_default_acl()
-        system = acl.update(Acl.deny_all())
-        event = {
-            "eventId": str(eventid or uuid.uuid4()),
-            "eventType": "settings",
-            "data": {
-                "$userStreamAcl": user.to_dict(),
-                "$systemStreamAcl": system.to_dict()
-            }
-        }
-        self.client.post("/streams/$settings", [event], EVENTS)
+    def revoke(self, acl, eventid=None):
+        user, system = self.get_acl()
+        current = system if self.is_system else user
+        new = current.revoke(acl)
+        self.set_acl(new, eventid)
 
 
 class Client:
@@ -298,6 +307,8 @@ class Client:
         self.base_uri = "{0}://{1}:{2}".format(scheme, host, port)
         self.users = UserManager(self)
         self.streams = StreamManager(self)
+        self.user_acl = DefaultAclManager(self)
+        self.system_acl = DefaultAclManager(self, is_system=True)
         self.username = username
         self.password = password
 

@@ -1,0 +1,19 @@
+{
+  "$userStreamAcl": {
+    "$r": "$all",
+    "$w": "ouro",
+    "$d": "ouro",
+    "$mr": "ouro",
+    "$mw": "ouro"
+  },
+  "$systemStreamAcl": {
+    "$r": [
+      "$admins",
+      "ouro"
+    ],
+    "$w": "$admins",
+    "$d": "$admins",
+    "$mr": "$admins",
+    "$mw": "$admins"
+  }
+}
