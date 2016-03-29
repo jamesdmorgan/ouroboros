@@ -53,26 +53,29 @@ EXAMPLES = '''
 from future.standard_library import install_aliases
 install_aliases()
 
-from ouroboros.client import Client, NotFoundException
+from ouroboros.client import Client, Acl
 
 def update_stream(client, module):
-    name = module.params.get('name')
-    acl = Acl.empty()
+    user_current, system_current = client.user_acl.get_acl()
+    result = {}
+    changed = False
     if "user" in module.params:
         user_acl = Acl(**module.params.get('user'))
-        result['acl'] = acl.to_dict()
+        if user_acl != user_current:
+            result['user_acl'] = user_acl.to_dict()
+            changed = True
+            client.user_acl.set_acl(user_acl)
 
-    try:
-        client.streams.get_acl(name)
-        if acl.is_empty():
-            module.exit_json(changed=False)
-        client.streams.set_acl(name, acl)
-        result['action'] = 'update'
-    except NotFoundException:
-        client.streams.create(name, acl)
-        result['action'] = 'create'
+    if "system" in module.params:
+        system_acl = Acl(**module.params.get('system'))
+        if system_acl != system_current:
+            result['system_acl'] = system_acl.to_dict()
+            changed = True
+            client.system_acl.set_acl(system_acl)
 
-    module.exit_json(changed=True, result=result)
+
+    module.exit_json(changed=changed, result=result)
+
 
 def main():
     module = AnsibleModule(argument_spec=dict(
@@ -81,7 +84,6 @@ def main():
         admin_password=dict(required=True, type='str'),
         system=dict(required=False, type='dict'),
         user=dict(required=False, type='dict'),
-        name=dict(required=True, type='str'),
         ))
 
     uri = module.params['host_uri']
@@ -90,10 +92,7 @@ def main():
 
     client = Client.from_uri(uri, adminuser, adminpass)
 
-    if state == "absent":
-        remove_stream(client, module)
-    else:
-        update_stream(client, module)
+    update_stream(client, module)
 
 # import module snippets
 from ansible.module_utils.basic import *

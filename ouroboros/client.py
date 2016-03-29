@@ -37,6 +37,9 @@ class Acl:
             and self.as_set(self.metadata_read) == self.as_set(other.metadata_read)
             and self.as_set(self.metadata_write) == self.as_set(other.metadata_write))
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
     def to_dict(self):
         return {k:v for k,v in {
