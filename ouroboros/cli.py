@@ -1,6 +1,8 @@
 import click
 from ouroboros.client import Client, Acl
 
+DEFAULT_SYSTEM_ACL = "__OUROBOROS__DEFAULT_SYSTEM_ACL"
+DEFAULT_USER_ACL = "__OUROBOROS__DEFAULT_USER_ACL"
 
 def make_client(ctx):
     return Client(ctx.obj['host'],
@@ -81,7 +83,9 @@ def streamadd(ctx, stream, read, write, delete, metadata_read, metadata_write):
 
 
 @ouro.command("set-acl")
-@click.argument("stream")
+@click.option("--system", "stream", flag_value=DEFAULT_SYSTEM_ACL)
+@click.option("--user", "stream", flag_value=DEFAULT_USER_ACL)
+@click.option("--stream", "stream")
 @click.option("--read", "-r", multiple=True)
 @click.option("--write", "-w", multiple=True)
 @click.option("--delete", "-d", multiple=True)
@@ -90,23 +94,19 @@ def streamadd(ctx, stream, read, write, delete, metadata_read, metadata_write):
 @click.pass_context
 def set_acl(ctx, stream, read, write, delete, metadata_read, metadata_write):
     client = make_client(ctx)
-    client.streams.set_acl(stream, Acl(read, write, delete, metadata_read, metadata_write))
+    acl = Acl(read, write, delete, metadata_read, metadata_write)
+    if stream == DEFAULT_SYSTEM_ACL:
+        client.system_acl.set_acl(acl)
+    elif stream == DEFAULT_USER_ACL:
+        client.user_acl.set_acl(acl)
+    else:
+        client.streams.set_acl(stream, )
 
-
-@ouro.command("grant")
-@click.argument("stream")
-@click.option("--read", "-r", multiple=True)
-@click.option("--write", "-w", multiple=True)
-@click.option("--delete", "-d", multiple=True)
-@click.option("--metadata-read", "-mr", multiple=True)
-@click.option("--metadata-write", "-mw", multiple=True)
-@click.pass_context
-def grant(ctx, stream, read, write, delete, metadata_read, metadata_write):
-    client = make_client(ctx)
-    client.streams.grant(stream, Acl(read, write, delete, metadata_read, metadata_write))
 
 @ouro.command("revoke")
-@click.argument("stream")
+@click.option("--system", "stream", flag_value=DEFAULT_SYSTEM_ACL)
+@click.option("--user", "stream", flag_value=DEFAULT_USER_ACL)
+@click.option("--stream", "stream")
 @click.option("--read", "-r", multiple=True)
 @click.option("--write", "-w", multiple=True)
 @click.option("--delete", "-d", multiple=True)
@@ -115,11 +115,35 @@ def grant(ctx, stream, read, write, delete, metadata_read, metadata_write):
 @click.pass_context
 def revoke(ctx, stream, read, write, delete, metadata_read, metadata_write):
     client = make_client(ctx)
-    client.streams.revoke(stream, Acl(read, write, delete, metadata_read, metadata_write))
+    acl = Acl(read, write, delete, metadata_read, metadata_write)
+    if stream == DEFAULT_SYSTEM_ACL:
+        client.system_acl.revoke(acl)
+    elif stream == DEFAULT_USER_ACL:
+        client.user_acl.revoke(acl)
+    else:
+        client.streams.revoke(stream, acl)
 
 
 
-
+@ouro.command("grant")
+@click.option("--system", "stream", flag_value=DEFAULT_SYSTEM_ACL)
+@click.option("--user", "stream", flag_value=DEFAULT_USER_ACL)
+@click.option("--stream", "stream")
+@click.option("--read", "-r", multiple=True)
+@click.option("--write", "-w", multiple=True)
+@click.option("--delete", "-d", multiple=True)
+@click.option("--metadata-read", "-mr", multiple=True)
+@click.option("--metadata-write", "-mw", multiple=True)
+@click.pass_context
+def grant(ctx, stream, read, write, delete, metadata_read, metadata_write):
+    client = make_client(ctx)
+    acl = Acl(read, write, delete, metadata_read, metadata_write)
+    if stream == DEFAULT_SYSTEM_ACL:
+        client.system_acl.grant(acl)
+    elif stream == DEFAULT_USER_ACL:
+        client.user_acl.grant(acl)
+    else:
+        client.streams.grant(stream, acl)
 
 
 @ouro.command("usermod")
@@ -136,6 +160,26 @@ def update_user(ctx, username, group, delete_group, password):
         client.users.removegroup(username, *delete_group)
     if password:
         client.users.setpassword(username, password)
+
+
+@ouro.command("get-acl")
+@click.option("--system", "stream", flag_value=DEFAULT_SYSTEM_ACL)
+@click.option("--user", "stream", flag_value=DEFAULT_USER_ACL)
+@click.option("--stream", "stream")
+@click.pass_context
+def get_acl(ctx, stream):
+    client = make_client(ctx)
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+
+    if stream == DEFAULT_SYSTEM_ACL:
+        _, acl = client.system_acl.get_acl()
+    elif stream == DEFAULT_USER_ACL:
+        acl, _ = client.system_acl.get_acl()
+    else:
+        acl = client.streams.get_acl(stream)
+
+    pp.pprint(acl.to_dict())
 
 
 def main():
