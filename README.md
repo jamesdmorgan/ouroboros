@@ -1,9 +1,8 @@
 # ouroboros
 
-A quick and dirty library for managing users, permissions, and streams in Eventstore.
+A library, command line interface, and set of Ansible modules for managing users, permissions, and streams in Eventstore.
 
 Docs can be found at http://ouroboros.readthedocs.org/en/latest/?
 
 Install it with `pip install es-ouroboros`.
-
-Everything is very unstable, there's no useful feedback, run at your own risk ;)
+Grab the Ansible modules from the ouroboros_ansible directory
