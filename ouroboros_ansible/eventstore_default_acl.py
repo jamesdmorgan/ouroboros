@@ -26,7 +26,7 @@ options:
 
 EXAMPLES = '''
 # Modify the default acl for user-created streams
-- eventstore_stream:
+- eventstore_default_acl:
     host_uri: http://localhost:2113
     admin_username: admin
     admin_password: changeit
@@ -57,17 +57,19 @@ from ouroboros.client import Client, Acl
 
 def update_stream(client, module):
     user_current, system_current = client.user_acl.get_acl()
+    user_param = module.params.get("user")
+    system_param = module.params.get("system")
     result = {}
     changed = False
-    if "user" in module.params:
-        user_acl = Acl(**module.params.get('user'))
+    if user_param is not None:
+        user_acl = Acl(**user_param)
         if user_acl != user_current:
             result['user_acl'] = user_acl.to_dict()
             changed = True
             client.user_acl.set_acl(user_acl)
 
-    if "system" in module.params:
-        system_acl = Acl(**module.params.get('system'))
+    if system_param is not None:
+        system_acl = Acl(**system_param)
         if system_acl != system_current:
             result['system_acl'] = system_acl.to_dict()
             changed = True

@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name="es-ouroboros",
-    version="0.3",
+    version="0.4",
     author="Bob Gregory",
     author_email="pathogenix@gmail.com",
     url="https://github.com/madedotcom/ouroboros/",
