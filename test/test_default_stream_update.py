@@ -85,7 +85,7 @@ class when_granting_additional_permissions_on_the_user_default_acl(with_fake_htt
     def given_a_default_acl(self):
         self.start_mocking_http()
         self.fake_response('/streams/$settings', file='settings-stream.js')
-        self.fake_response('/streams/$settings/0', file='settings.json')
+        self.fake_response('/streams/$settings/6', file='settings.json')
         self.expect_call('/streams/$settings', httpretty.POST)
 
     def because_we_grant_additional_permissions(self):
@@ -123,7 +123,7 @@ class when_revoking_permissions_from_the_user_acl(with_fake_http):
     def given_a_default_acl(self):
         self.start_mocking_http()
         self.fake_response('/streams/$settings', file='settings-stream.js')
-        self.fake_response('/streams/$settings/0', file='settings.json')
+        self.fake_response('/streams/$settings/6', file='settings.json')
         self.expect_call('/streams/$settings', httpretty.POST)
 
     def because_we_revoke_write_permissions(self):
@@ -161,7 +161,7 @@ class when_granting_additional_permissions_on_the_system_default_acl(with_fake_h
     def given_a_default_acl(self):
         self.start_mocking_http()
         self.fake_response('/streams/$settings', file='settings-stream.js')
-        self.fake_response('/streams/$settings/0', file='settings.json')
+        self.fake_response('/streams/$settings/6', file='settings.json')
         self.expect_call('/streams/$settings', httpretty.POST)
 
     def because_we_grant_additional_permissions(self):
@@ -199,7 +199,7 @@ class when_revoking_permissions_from_the_system_acl(with_fake_http):
     def given_a_default_acl(self):
         self.start_mocking_http()
         self.fake_response('/streams/$settings', file='settings-stream.js')
-        self.fake_response('/streams/$settings/0', file='settings.json')
+        self.fake_response('/streams/$settings/6', file='settings.json')
         self.expect_call('/streams/$settings', httpretty.POST)
 
     def because_we_revoke_write_permissions(self):
