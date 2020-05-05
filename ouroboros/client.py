@@ -341,7 +341,7 @@ class SubscriptionManager:
             max_subscriber_count=10,
             named_consumer_strategy="RoundRobin"):
 
-        SubscriptionManager._validate_consumer_strategy(named_consumer_strategy)
+        self._validate_consumer_strategy(named_consumer_strategy)
 
         body = {
             "checkpoints": checkpoint_after,
@@ -390,7 +390,7 @@ class SubscriptionManager:
         current = self.get(group_name, stream)['config']
 
         strategy = current['namedConsumerStrategy'] if named_consumer_strategy is None else named_consumer_strategy
-        SubscriptionManager._validate_consumer_strategy(strategy)
+        self._validate_consumer_strategy(strategy)
 
         body = {
             "checkpoints": current['checkPointAfterMilliseconds'] if checkpoint_after is None else checkpoint_after,
@@ -418,7 +418,7 @@ class SubscriptionManager:
                 "old_config": current,
                 "new_config": body}
 
-    def _validate_consumer_strategy(strategy):
+    def _validate_consumer_strategy(self, strategy):
         VALID_CONSUMER_STRATEGIES = [
             "RoundRobin",
             "DispatchToSingle",
