@@ -181,6 +181,56 @@ def get_acl(ctx, stream):
 
     pp.pprint(acl.to_dict())
 
+@ouro.command("subscriptionget")
+@click.argument("group_name")
+@click.argument("stream")
+@click.pass_context
+def get_subscription(ctx, group_name, stream):
+    client = make_client(ctx)
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+
+    sub = client.subscriptions.get(group_name, stream)
+
+    pp.pprint(sub)
+
+@ouro.command("subscriptionmod")
+@click.argument("group_name")
+@click.argument("stream")
+@click.pass_context
+def update_subscription(ctx, group_name, stream):
+    client = make_client(ctx)
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+
+    sub = client.subscriptions.update(group_name, stream)
+
+    pp.pprint(sub)
+
+@ouro.command("subscriptionadd")
+@click.argument("group_name")
+@click.argument("stream")
+@click.pass_context
+def add_subscription(ctx, group_name, stream):
+    client = make_client(ctx)
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+
+    sub = client.subscriptions.create(group_name, stream)
+
+    pp.pprint(sub)
+
+@ouro.command("subscriptiondel")
+@click.argument("group_name")
+@click.argument("stream")
+@click.pass_context
+def delete_subscription(ctx, group_name, stream):
+    client = make_client(ctx)
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+
+    client.subscriptions.delete(group_name, stream)
+
 
 def main():
     ouro(obj={})

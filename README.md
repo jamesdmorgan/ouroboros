@@ -1,6 +1,6 @@
 # ouroboros
 
-A library, command line interface, and set of Ansible modules for managing users, permissions, and streams in Eventstore.
+A library, command line interface, and set of Ansible modules for managing users, permissions, streams and subscrioptions in Eventstore.
 
 Docs can be found at http://ouroboros.readthedocs.org/en/latest/?
 
