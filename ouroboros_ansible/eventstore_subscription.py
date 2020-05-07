@@ -132,12 +132,24 @@ def update_subscription(client, module):
     group_name = module.params['group_name']
     stream = module.params['stream']
     try:
-        client.subscriptions.get(group_name, stream)
+        sub = client.subscriptions.get(group_name, stream)
     except NotFoundException:
         create_subscription(client, module)
         return
 
     args = get_subscription_args(module)
+
+    diff = compare_configs(sub['config'], args)
+
+    if diff == {}:
+        module.exit_json(changed=False, result={
+            "actions": ["none"],
+            "subscription": {
+                "group_name": args['group_name'],
+                "stream": args['stream'],
+                "config": sub['config']
+            }
+        })
 
     config = client.subscriptions.update(**args)
 
@@ -146,9 +158,38 @@ def update_subscription(client, module):
         "subscription": {
             "group_name": args['group_name'],
             "stream": args['stream'],
-            "config_diff": config
+            "config": config['new_config'],
+            "config_diff": diff
         }
     })
+
+def compare_configs(current_config, new_config):
+
+    mapping = {
+        "buffer_size": "bufferSize",
+        "checkpoint_after": "checkPointAfterMilliseconds",
+        "extra_statistics": "extraStatistics",
+        "live_buffer_size": "liveBufferSize",
+        "max_checkpoint_count": "maxCheckPointCount",
+        "max_retry": "maxRetryCount",
+        "max_subscriber_count": "maxSubscriberCount",
+        "message_timeout": "messageTimeoutMilliseconds",
+        "min_checkpoint_count": "minCheckPointCount",
+        "named_consumer_strategy": "namedConsumerStrategy",
+        "read_batch_size": "readBatchSize",
+        "resolve_link_tos": "resolveLinktos",
+        "start_from": "startFrom"}
+
+    diff = {}
+
+    for key in new_config:
+        if key in ["group_name", "stream"]:
+            continue
+
+        if current_config[mapping[key]] != new_config[key]:
+            diff[key] = "{} => {}".format(current_config[mapping[key]], new_config[key])
+
+    return diff
 
 def main():
     module = AnsibleModule(argument_spec=dict(
