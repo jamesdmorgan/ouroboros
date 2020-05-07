@@ -14,7 +14,7 @@ class have_posted_to(Matcher):
         self._method = method
 
     def _match(self, req):
-        return self._path == req.path and self._method == req.method
+        return self._path == req.path and self._method == req.method, "does not match"
 
     def _failure_message(self, req):
         return self._fail.format(self._path, req.path, self._method)
@@ -26,7 +26,7 @@ class have_json(Matcher):
         self._body = body
 
     def _match(self, req):
-        return json.loads(req.body.decode('Utf-8')) == self._body
+        return json.loads(req.body.decode('Utf-8')) == self._body, "does not match"
 
     def _failure_message(self, req):
         return "Expected request with body {0} but was {1}".format(

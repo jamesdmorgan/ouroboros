@@ -312,6 +312,122 @@ class DefaultAclManager:
         self.set_acl(new, eventid)
 
 
+class SubscriptionManager:
+
+    def __init__(self, client):
+        self.client = client
+
+    def get(self, group_name, stream):
+        response = self.client.get('/subscriptions/{}/{}/info'.format(stream, group_name), JSON)
+
+        data = response.json()
+
+        return data
+
+    def create(self,
+            group_name,
+            stream,
+            resolve_link_tos=False,
+            start_from=0,
+            message_timeout=10000,
+            extra_statistics=False,
+            max_retry=10,
+            live_buffer_size=500,
+            buffer_size=500,
+            read_batch_size=20,
+            checkpoint_after=1000,
+            min_checkpoint_count=10,
+            max_checkpoint_count=500,
+            max_subscriber_count=10,
+            named_consumer_strategy="RoundRobin"):
+
+        self._validate_consumer_strategy(named_consumer_strategy)
+
+        body = {
+            "checkpoints": checkpoint_after,
+            "resolveLinktos": resolve_link_tos,
+            "startFrom": start_from,
+            "messageTimeoutMilliseconds": message_timeout,
+            "extraStatistics": extra_statistics,
+            "maxRetryCount":max_retry,
+            "liveBufferSize": live_buffer_size,
+            "bufferSize": buffer_size,
+            "readBatchSize": read_batch_size,
+            "checkPointAfterMilliseconds": checkpoint_after,
+            "minCheckPointCount": min_checkpoint_count,
+            "maxCheckPointCount": max_checkpoint_count,
+            "maxSubscriberCount": max_subscriber_count,
+            "namedConsumerStrategy": named_consumer_strategy}
+
+
+        response = self.client.put(
+                "/subscriptions/{}/{}".format(stream, group_name),
+                body,
+                JSON)
+
+        return body
+
+    def delete(self, group_name, stream):
+        self.client.delete('/subscriptions/{}/{}'.format(stream, group_name))
+
+    def update(self,
+            group_name,
+            stream,
+            resolve_link_tos=None,
+            start_from=None,
+            message_timeout=None,
+            extra_statistics=None,
+            max_retry=None,
+            live_buffer_size=None,
+            buffer_size=None,
+            read_batch_size=None,
+            checkpoint_after=None,
+            min_checkpoint_count=None,
+            max_checkpoint_count=None,
+            max_subscriber_count=None,
+            named_consumer_strategy=None):
+
+        current = self.get(group_name, stream)['config']
+
+        strategy = current['namedConsumerStrategy'] if named_consumer_strategy is None else named_consumer_strategy
+        self._validate_consumer_strategy(strategy)
+
+        body = {
+            "checkpoints": current['checkPointAfterMilliseconds'] if checkpoint_after is None else checkpoint_after,
+            "resolveLinktos": current['resolveLinktos'] if resolve_link_tos is None else resolve_link_tos,
+            "startFrom": current['startFrom'] if start_from is None else start_from,
+            "messageTimeoutMilliseconds": current['messageTimeoutMilliseconds'] if message_timeout is None else message_timeout,
+            "extraStatistics": current['extraStatistics'] if extra_statistics is None else extra_statistics,
+            "maxRetryCount": current['maxRetryCount'] if max_retry is None else max_retry,
+            "liveBufferSize": current['liveBufferSize'] if live_buffer_size is None else live_buffer_size,
+            "bufferSize": current['bufferSize'] if buffer_size is None else buffer_size,
+            "readBatchSize": current['readBatchSize'] if read_batch_size is None else read_batch_size,
+            "checkPointAfterMilliseconds": current['checkPointAfterMilliseconds'] if checkpoint_after is None else checkpoint_after,
+            "minCheckPointCount": current['minCheckPointCount'] if min_checkpoint_count is None else min_checkpoint_count,
+            "maxCheckPointCount": current['maxCheckPointCount'] if max_checkpoint_count is None else max_checkpoint_count,
+            "maxSubscriberCount": current['maxSubscriberCount'] if max_subscriber_count is None else max_subscriber_count,
+            "namedConsumerStrategy": strategy}
+
+
+        response = self.client.post(
+                "/subscriptions/{}/{}".format(stream, group_name),
+                body,
+                JSON)
+
+        return {
+                "old_config": current,
+                "new_config": body}
+
+    def _validate_consumer_strategy(self, strategy):
+        VALID_CONSUMER_STRATEGIES = [
+            "RoundRobin",
+            "DispatchToSingle",
+            "Pinned"]
+
+        if strategy not in VALID_CONSUMER_STRATEGIES:
+            raise ValueError("Named Startegy {} is not recognised".format(strategy))
+
+
 class Client:
 
     def __init__(self, host, port, username, password, no_ssl=False):
@@ -321,6 +437,7 @@ class Client:
         self.streams = StreamManager(self)
         self.user_acl = DefaultAclManager(self)
         self.system_acl = DefaultAclManager(self, is_system=True)
+        self.subscriptions = SubscriptionManager(self)
         self.username = username
         self.password = password
 
