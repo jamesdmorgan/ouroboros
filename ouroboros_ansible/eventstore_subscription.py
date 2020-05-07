@@ -45,7 +45,7 @@ options:
         required: false
     read_batch_size: 
         description: The size of the read batch when in paging mode.
-    checkout_after:
+    checkpoint_after:
         descriptions: The amount of time the system should try to checkpoint after (in milliseconds).
         required: false
     min_checkpoint_count:
